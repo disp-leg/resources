@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DEEP CUTS // Underground Film Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --black: #000;
+  --white: #FFF;
+  --red: #FF0000;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  --border: 2px solid var(--white);
+  --border-thick: 4px solid var(--white);
+}
+
+html { font-size: 16px; scroll-behavior: auto; }
+
+body {
+  font-family: var(--mono);
+  background: var(--black);
+  color: var(--white);
+  max-width: 430px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  -webkit-font-smoothing: none;
+  line-height: 1.3;
+}
+
+::selection { background: var(--red); color: var(--black); }
+
+.ticker {
+  border-bottom: var(--border);
+  padding: 6px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--black);
+}
+
+.ticker-inner {
+  display: inline-block;
+  animation: ticker-scroll 25s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker .red { color: var(--red); }
+
+.header {
+  border-bottom: var(--border-thick);
+  padding: 20px 12px 16px;
+}
+
+.header-title {
+  font-family: var(--mono);
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.header-title .slash { color: var(--red); }
+
+.header-sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--white);
+}
+
+.header-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 10px;
+  border-top: 1px solid var(--white);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.header-meta div { padding: 6px 0; }
+.header-meta div:first-child { border-right: 1px solid var(--white); padding-right: 8px; }
+.header-meta div:last-child { padding-left: 8px; }
+.header-meta span { color: var(--red); }
+
+.nav-index {
+  border-bottom: var(--border-thick);
+  padding: 10px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.nav-index a {
+  color: var(--white);
+  text-decoration: none;
+  display: block;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  transition: color 0s step-start, background 0s step-start;
+}
+
+.nav-index a:last-child { border-bottom: none; }
+
+.nav-index a:hover {
+  color: var(--black);
+  background: var(--red);
+  padding-left: 6px;
+}
+
+.nav-index .idx {
+  color: var(--red);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.tier { border-bottom: var(--border-thick); }
+
+.tier-header {
+  padding: 16px 12px;
+  border-bottom: var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-number {
+  font-family: var(--sans);
+  font-size: 120px;
+  font-weight: 900;
+  line-height: 0.8;
+  color: var(--red);
+  position: absolute;
+  right: -8px;
+  top: -10px;
+  opacity: 0.25;
+  user-select: none;
+}
+
+.tier-label {
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.tier-desc {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+  color: var(--red);
+  position: relative;
+  z-index: 1;
+}
+
+.movie {
+  border-bottom: var(--border);
+  position: relative;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.1s step-start, transform 0.1s step-start;
+}
+
+.movie.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.movie-top {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  cursor: pointer;
+}
+
+.movie-poster {
+  border-right: var(--border);
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.movie-poster img {
+  width: 100%;
+  display: block;
+  filter: grayscale(100%) contrast(1.4);
+  transition: filter 0s step-start;
+}
+
+.movie-top:hover .movie-poster img {
+  filter: grayscale(0%) contrast(1.2) saturate(0.3);
+}
+
+.movie-poster .idx-num {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 9px;
+  background: var(--red);
+  color: var(--black);
+  padding: 1px 4px;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.movie-info {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.movie-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.movie-top:hover .movie-title { color: var(--red); }
+
+.movie-year-dir {
+  font-size: 10px;
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+
+.movie-year-dir .year {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.movie-rating {
+  font-size: 11px;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.movie-rating .score { color: var(--red); }
+
+.movie-rating .bar {
+  display: inline-block;
+  width: 60px;
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  vertical-align: middle;
+  margin-left: 6px;
+  position: relative;
+}
+
+.movie-rating .bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--red);
+}
+
+.movie-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.movie-tags span {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--white);
+  padding: 2px 5px;
+  transition: all 0s step-start;
+}
+
+.movie-top:hover .movie-tags span {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.movie-streaming {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+  color: rgba(255,255,255,0.5);
+}
+
+.movie-streaming .platform {
+  color: var(--white);
+  border-bottom: 1px solid var(--red);
+}
+
+.movie-details {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.15s linear;
+}
+
+.movie-details.open {
+  max-height: 400px;
+  border-top: var(--border);
+}
+
+.movie-details-inner {
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.movie-details-inner .label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--red);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.movie-details-inner .desc { margin-bottom: 10px; }
+
+.movie-details-inner .dna {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.movie-details-inner .dna span {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--white);
+  color: var(--black);
+  padding: 2px 5px;
+  font-weight: 700;
+}
+
+.movie-expand-hint {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--red);
+  text-align: right;
+  padding: 2px 0 0;
+}
+
+.tier-header:hover .tier-label {
+  animation: glitch 0.3s step-start;
+}
+
+@keyframes glitch {
+  0%, 100% { transform: none; }
+  20% { transform: translate(-2px, 1px); color: var(--red); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, -2px); color: var(--red); }
+  80% { transform: translate(1px, 2px); }
+}
+
+.scroll-counter {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--red);
+  background: var(--black);
+  border: 1px solid var(--red);
+  padding: 3px 8px;
+  z-index: 100;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.footer {
+  padding: 16px 12px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.8;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: var(--border);
+  margin-bottom: 12px;
+}
+
+.footer-cell {
+  padding: 8px;
+  border-bottom: 1px solid var(--white);
+}
+
+.footer-cell:nth-child(odd) { border-right: 1px solid var(--white); }
+
+.footer-cell .fc-label {
+  color: var(--red);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 8px;
+}
+
+.footer-sources {
+  border-top: var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.footer-sources span { color: var(--red); }
+
+.footer-end {
+  text-align: center;
+  padding: 20px 0 30px;
+  border-top: var(--border-thick);
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.footer-end .red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <span class="red">[SYS]</span> DEEP CUTS v1.0 &mdash; 20 FILMS INDEXED &mdash; ANCHOR: THE DIVIDE (2011) &mdash; CRITERIA: POST-APOCALYPTIC / PSYCHOLOGICAL / CLAUSTROPHOBIC &mdash; ENGLISH AUDIO ONLY &mdash; RELEASE: 2000+ &mdash; <span class="red">NO MAINSTREAM</span> &mdash; LAST UPDATED 2026-03-28 &mdash;&nbsp;&nbsp;&nbsp;
+    <span class="red">[SYS]</span> DEEP CUTS v1.0 &mdash; 20 FILMS INDEXED &mdash; ANCHOR: THE DIVIDE (2011) &mdash; CRITERIA: POST-APOCALYPTIC / PSYCHOLOGICAL / CLAUSTROPHOBIC &mdash; ENGLISH AUDIO ONLY &mdash; RELEASE: 2000+ &mdash; <span class="red">NO MAINSTREAM</span> &mdash; LAST UPDATED 2026-03-28 &mdash;&nbsp;&nbsp;&nbsp;
+  </div>
+</div>
+
+<header class="header">
+  <h1 class="header-title">DEEP<br><span class="slash">//</span>CUTS</h1>
+  <div class="header-sub">Underground film database &mdash; curated for the restless</div>
+  <div class="header-meta">
+    <div><span>FILMS:</span> 20 INDEXED</div>
+    <div><span>ANCHOR:</span> THE DIVIDE</div>
+  </div>
+</header>
+
+<nav class="nav-index">
+  <a href="#tier-1"><span class="idx">01</span> DIRECT MATCHES</a>
+  <a href="#tier-2"><span class="idx">02</span> CLAUSTROPHOBIC SINGLE-LOCATION</a>
+  <a href="#tier-3"><span class="idx">03</span> SURVIVAL PRESSURE COOKERS</a>
+  <a href="#tier-4"><span class="idx">04</span> ADJACENT DEEP CUTS</a>
+</nav>
+
+<main id="main"></main>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-cell"><span class="fc-label">TOTAL FILMS</span>20</div>
+    <div class="footer-cell"><span class="fc-label">YEAR RANGE</span>2001&ndash;2024</div>
+    <div class="footer-cell"><span class="fc-label">AVG RATING</span>3.0 / 5.0</div>
+    <div class="footer-cell"><span class="fc-label">AUDIO</span>ENGLISH ONLY</div>
+    <div class="footer-cell"><span class="fc-label">CURATION</span>DEEP CUTS ONLY</div>
+    <div class="footer-cell"><span class="fc-label">VERSION</span>BATCH 1.0</div>
+  </div>
+  <div class="footer-sources">
+    <span>SOURCES:</span> REDDIT R/HORROR, R/MOVIESUGGESTIONS, R/MOVIES, LETTERBOXD, BESTSIMILAR, CBR, CREEPY CATALOG, JUSTWATCH
+  </div>
+  <div class="footer-end">
+    <span class="red">//</span> END TRANSMISSION <span class="red">//</span>
+  </div>
+</footer>
+
+<div class="scroll-counter" id="scroll-counter">00/20</div>
+
+<script>
+const MOVIES = [
+  { id:1, title:"Right at Your Door", year:2006, director:"Chris Gorak", tier:"t1_direct_matches", genre_tags:["post-apocalyptic","thriller","domestic horror","dirty bomb"], dna:["isolation","claustrophobia","bleak","societal-collapse","psychological-horror"], rating:3.1, why:"Dirty bomb hits LA; husband seals himself inside the house while wife is outside. Same claustrophobic domestic apocalypse tension as The Divide.", streaming:{svod:[],avod:["Tubi","Pluto TV"]}, poster:"https://image.tmdb.org/t/p/w500/sBkCtdpkWRiisQ3vzyNOZ72biCB.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTI3NTk3MTk1NF5BMl5BanBnXkFtZTcwNzY3NTIzMQ@@._V1_.jpg" },
+  { id:2, title:"Hidden", year:2015, director:"Matt Duffer, Ross Duffer", tier:"t1_direct_matches", genre_tags:["post-apocalyptic","survival","family horror","bunker"], dna:["isolation","claustrophobia","survival","bunker","psychological-horror"], rating:3.1, why:"Family hiding in a bunker after an outbreak. Pre-Stranger Things Duffer Brothers. Claustrophobic survival with a twist ending.", streaming:{svod:["Netflix","Amazon Prime"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/mPuaHaczkoJDzlYD9GyXiDjMXig.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTQ2NjA5MTA3NF5BMl5BanBnXkFtZTgwNDk1NTg0NTE@._V1_.jpg" },
+  { id:3, title:"Carriers", year:2009, director:"Alex Pastor, David Pastor", tier:"t1_direct_matches", genre_tags:["post-apocalyptic","pandemic","road movie","survival"], dna:["survival","societal-collapse","bleak","psychological-horror"], rating:2.8, why:"Four survivors navigate a pandemic wasteland with strict rules to avoid infection. Moral decay under survival pressure mirrors The Divide.", streaming:{svod:["Amazon Prime"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/jxjnjHtHXgvjdhkwpelE9ZwVMg6.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTU2NjkwNDMxNV5BMl5BanBnXkFtZTcwMTI4MzIyMg@@._V1_.jpg" },
+  { id:4, title:"It Comes at Night", year:2017, director:"Trey Edward Shults", tier:"t1_direct_matches", genre_tags:["post-apocalyptic","psychological horror","paranoia","isolation"], dna:["isolation","claustrophobia","bleak","psychological-horror","survival"], rating:3.1, why:"Family boarded up in a house during an unspecified plague. Trust erodes into paranoia and violence. The quintessential 'who can you trust' film.", streaming:{svod:["Netflix","Amazon Prime"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/rNKJpFMlOZn5zkzBPZxEJrQn5Km.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNjQ0NTczMjI@._V1_.jpg" },
+  { id:5, title:"Await Further Instructions", year:2018, director:"Johnny Kevorkian", tier:"t1_direct_matches", genre_tags:["sci-fi horror","isolation","family dysfunction","lockdown"], dna:["isolation","claustrophobia","psychological-horror","societal-collapse"], rating:2.5, why:"Family trapped in their house on Christmas Day by a mysterious barricade. TV gives increasingly sinister instructions. Sealed-in paranoia.", streaming:{svod:["Netflix","Shudder"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/afvi5tVi5S3Ux9faZaI32SmPRkj.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BYzFiYzI1MGEtYmI4NC00MWNhLTgyZmMtMWJjYTliYjg4YzRjXkEyXkFqcGdeQXVyMjM4NTM5NDY@._V1_.jpg" },
+  { id:6, title:"Coherence", year:2013, director:"James Ward Byrkit", tier:"t2_claustrophobic", genre_tags:["sci-fi","psychological thriller","single-location","quantum"], dna:["claustrophobia","psychological-horror","isolation"], rating:3.7, why:"Dinner party goes wrong when a comet passes overhead. Reality fractures. The paranoia and group dynamics in a confined space are pure Divide energy.", streaming:{svod:["Amazon Prime"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/ezUtb9m5DeLwL2gxi4gktzNCvQv.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjMwOTMxNzQzOF5BMl5BanBnXkFtZTgwNTc3NDI3MjE@._V1_.jpg" },
+  { id:7, title:"Pontypool", year:2008, director:"Bruce McDonald", tier:"t2_claustrophobic", genre_tags:["horror","single-location","language virus","siege"], dna:["isolation","claustrophobia","psychological-horror"], rating:3.3, why:"Radio DJ trapped in his station as a virus spreads through the English language. The horror is in what you hear, not what you see.", streaming:{svod:["Shudder"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/uh4n9FSYYaeOWchP8gBPNtg7kD7.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BNTk5MTQ1NDAtZGU4ZS00MTJkLWE4NjctYjk0YTVmNGJlYTY0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg" },
+  { id:8, title:"The Platform", year:2019, director:"Galder Gaztelu-Urrutia", tier:"t2_claustrophobic", genre_tags:["sci-fi horror","social allegory","vertical prison","survival"], dna:["claustrophobia","survival","bleak","societal-collapse"], rating:3.4, why:"Vertical prison where food descends level by level. Same resource scarcity and moral collapse as The Divide but as brutal social allegory.", streaming:{svod:["Netflix"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/iXvQnzy6JCAx1PiQEKXuTY04ZHl.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMzdjNjI5MmYtODhiNS00NTcyLWEzZmMtMzYyMjI2MmRjYzA2XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg" },
+  { id:9, title:"Exam", year:2009, director:"Stuart Hazeldine", tier:"t2_claustrophobic", genre_tags:["psychological thriller","single-room","corporate horror","puzzle"], dna:["claustrophobia","psychological-horror"], rating:3.3, why:"Eight candidates in a single room for a final job interview. One question, 80 minutes, strict rules. Confined-space tension distilled to its essence.", streaming:{svod:[],avod:["Tubi","Amazon Prime"]}, poster:"https://image.tmdb.org/t/p/w500/i1J2zBCyOQJKsQipqJ0qXERC1Ma.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTkwNTczNTc0Nl5BMl5BanBnXkFtZTcwMjUzNTM0Mg@@._V1_.jpg" },
+  { id:10, title:"The Bar", year:2017, director:"Alex de la Iglesia", tier:"t2_claustrophobic", genre_tags:["thriller","dark comedy","single-location","siege"], dna:["claustrophobia","psychological-horror","isolation"], rating:3.0, why:"Patrons trapped in a Madrid bar after a sniper kills anyone who exits. Paranoia mounts as they turn on each other.", streaming:{svod:["Netflix","Amazon Prime"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/vYyALnKnzHLv4PoU2b447GYT8R9.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BYzllMjljYWUtOGY2MS00YTI3LTk3NTUtYmZiY2NkNDkxN2Y3XkEyXkFqcGdeQXVyMjMxOTE0ODA@._V1_.jpg" },
+  { id:11, title:"Circle", year:2015, director:"Aaron Hann, Mario Miscione", tier:"t3_survival", genre_tags:["sci-fi","social experiment","voting","survival"], dna:["survival","psychological-horror","bleak"], rating:2.9, why:"50 strangers in a circle. Every 2 minutes, one dies by group vote. Pure survival psychology with no escape.", streaming:{svod:["Netflix"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/hbIL53MdZFJXsgxXaSOVuApWTs8.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNjQ0NTczMjI@._V1_.jpg" },
+  { id:12, title:"Would You Rather", year:2012, director:"David Guy Levy", tier:"t3_survival", genre_tags:["horror","survival game","dinner party","sadism"], dna:["survival","claustrophobia","bleak","psychological-horror"], rating:2.8, why:"Desperate guests at a rich man's dinner party forced into increasingly brutal choices. Confined space, escalating violence, moral compromise.", streaming:{svod:[],avod:["Tubi","Amazon Prime"]}, poster:"https://image.tmdb.org/t/p/w500/tos5MpjaOsAFVGjjieQlZsHlbd.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTkzNjEzNjMwM15BMl5BanBnXkFtZTcwNjMzOTUzOQ@@._V1_.jpg" },
+  { id:13, title:"Fermat's Room", year:2007, director:"Luis Piedrahita, Rodrigo Sopena", tier:"t3_survival", genre_tags:["thriller","puzzle","shrinking room","intellectual horror"], dna:["claustrophobia","survival","psychological-horror"], rating:3.2, why:"Four mathematicians locked in a room that shrinks unless they solve puzzles. Literal claustrophobia as survival mechanism.", streaming:{svod:[],avod:["Amazon Prime","Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/qQcYvPXxvk6bQDV9Zgd6cnDQmKZ.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTQzOTg1NzY3OF5BMl5BanBnXkFtZTcwODgyNjMwMg@@._V1_.jpg" },
+  { id:14, title:"Level 16", year:2018, director:"Danishka Esterhazy", tier:"t3_survival", genre_tags:["dystopian","sci-fi horror","institutional horror","escape"], dna:["claustrophobia","isolation","psychological-horror","bleak"], rating:3.0, why:"Girls in a mysterious boarding school discover the horrifying purpose of their captivity. Institutional claustrophobia with a body-horror twist.", streaming:{svod:["Shudder"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/glVIjhLmzmgtppLWb3lvnoPljGW.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTYzOTE3MDMwN15BMl5BanBnXkFtZTgwMDM0MzA5NjM@._V1_.jpg" },
+  { id:15, title:"The Incident", year:2014, director:"Isaac Ezban", tier:"t3_survival", genre_tags:["sci-fi horror","infinite loop","existential","Mexican cinema"], dna:["claustrophobia","isolation","psychological-horror","bleak"], rating:3.1, why:"Two groups trapped in infinite loops. Time passes but space repeats. Existential claustrophobia that gets under your skin.", streaming:{svod:[],avod:["Amazon Prime","Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/idb1ACZCQAsYJCFMfs9vgyBIbP1.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjEyNDI3NDkwN15BMl5BanBnXkFtZTgwMjY0NjIxNzE@._V1_.jpg" },
+  { id:16, title:"Pandorum", year:2009, director:"Christian Alvart", tier:"t4_adjacent", genre_tags:["sci-fi horror","space","amnesia","survival"], dna:["isolation","claustrophobia","survival","psychological-horror"], rating:3.2, why:"Crew wakes on a spaceship with no memory. Something is hunting them in the dark. The Divide in space.", streaming:{svod:["Amazon Prime"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/mNMfa6r3pl0EzFIKEkVcxyr6Rc7.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BNDhmMjZlNDEtYTk5Mi00N2NhLTgyOTktMDlmNGY0NmIwYzJjXkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_.jpg" },
+  { id:17, title:"The Void", year:2016, director:"Jeremy Gillespie, Steven Kostanski", tier:"t4_adjacent", genre_tags:["cosmic horror","siege","body horror","Lovecraftian"], dna:["isolation","claustrophobia","psychological-horror","bleak"], rating:3.0, why:"People trapped in a hospital surrounded by cultists. Cosmic horror seeps in. Practical effects, siege dynamics, Carpenter-esque.", streaming:{svod:["Shudder"],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/2WhZAPi3vomEQdzAPIYTvmvWaxI.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjUyMjgzNTcyMl5BMl5BanBnXkFtZTgwMjY0NjIxNzE@._V1_.jpg" },
+  { id:18, title:"Breathing Room", year:2008, director:"John Suits, Gabriel Cowan", tier:"t4_adjacent", genre_tags:["thriller","survival game","single-room","puzzle"], dna:["claustrophobia","survival","psychological-horror"], rating:2.4, why:"Strangers wake in a locked white room wearing explosive collars. Must figure out the rules or die. Ultra-low-budget but effective.", streaming:{svod:[],avod:["Tubi"]}, poster:"https://image.tmdb.org/t/p/w500/aaz4rgsEjApkUz87OrFT6sNZDks.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMTYzMDUwMDEzOV5BMl5BanBnXkFtZTcwMjk2OTkyMg@@._V1_.jpg" },
+  { id:19, title:"The Hole", year:2001, director:"Nick Hamm", tier:"t4_adjacent", genre_tags:["psychological thriller","bunker","teen horror","unreliable narrator"], dna:["claustrophobia","isolation","psychological-horror","bunker"], rating:2.9, why:"Four teens voluntarily lock themselves in a WWII bunker for a party weekend. Things go wrong. Early Keira Knightley.", streaming:{svod:["Amazon Prime"],avod:[]}, poster:"https://image.tmdb.org/t/p/w500/n5aMoI6AZLJzUoNbjMj0P60EYMJ.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BMjE0MTk3OTQ3MF5BMl5BanBnXkFtZTYwNjI0Nzc5._V1_.jpg" },
+  { id:20, title:"The Bunker", year:2024, director:"Adrian Langley", tier:"t4_adjacent", genre_tags:["post-apocalyptic","bunker","survival","indie horror"], dna:["isolation","claustrophobia","survival","societal-collapse","bleak"], rating:2.6, why:"Survivors in a bunker after nuclear event. Resources dwindle, tensions rise, paranoia sets in. The most direct successor to The Divide.", streaming:{svod:[],avod:["Tubi","Amazon Prime"]}, poster:"https://image.tmdb.org/t/p/w500/jOA7chFPVzSyPp2DaRg8hqA1BHr.jpg", fallback:"https://m.media-amazon.com/images/M/MV5BODMxMjE0MmQtZjE4OC00NzQ4LWExZjAtOGRmZWRiYWViNTdmXkEyXkFqcGc@._V1_.jpg" }
+];
+
+const TIERS = [
+  { key:"t1_direct_matches", num:"01", label:"Direct Matches", desc:"Closest in tone, setting, and psychological intensity to The Divide", id:"tier-1" },
+  { key:"t2_claustrophobic", num:"02", label:"Claustrophobic Single-Location", desc:"Confined-space psychological tension with group dynamics", id:"tier-2" },
+  { key:"t3_survival", num:"03", label:"Survival Pressure Cookers", desc:"High-concept survival scenarios with moral dilemmas", id:"tier-3" },
+  { key:"t4_adjacent", num:"04", label:"Adjacent Deep Cuts", desc:"Shares DNA with The Divide but diverges in subgenre or setting", id:"tier-4" }
+];
+
+function el(tag, attrs, children) {
+  const e = document.createElement(tag);
+  if (attrs) {
+    Object.keys(attrs).forEach(function(k) {
+      if (k === 'className') e.className = attrs[k];
+      else if (k === 'onclick') e.onclick = attrs[k];
+      else if (k === 'onerror') e.onerror = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+  }
+  if (typeof children === 'string') e.textContent = children;
+  else if (Array.isArray(children)) children.forEach(function(c) { if (c) e.appendChild(c); });
+  else if (children instanceof Node) e.appendChild(children);
+  return e;
+}
+
+function elHTML(tag, attrs, htmlStr) {
+  var e = el(tag, attrs);
+  // All content here is from hardcoded static data, not user input
+  var t = document.createElement('template');
+  t.innerHTML = htmlStr;
+  while (t.content.firstChild) e.appendChild(t.content.firstChild);
+  return e;
+}
+
+function buildStreamingNodes(s) {
+  var frag = document.createDocumentFragment();
+  var all = [];
+  s.svod.forEach(function(p) { all.push({name:p,free:false}); });
+  s.avod.forEach(function(p) { all.push({name:p,free:true}); });
+  if (!all.length) {
+    var sp = el('span', {style:'opacity:0.3'}, 'NO STREAMING DATA');
+    frag.appendChild(sp);
+    return frag;
+  }
+  all.forEach(function(p, i) {
+    if (i > 0) frag.appendChild(document.createTextNode(' / '));
+    var label = p.free ? p.name + ' (free)' : p.name;
+    frag.appendChild(el('span', {className:'platform'}, label));
+  });
+  return frag;
+}
+
+function toggleDetails(id) {
+  var d = document.getElementById('details-' + id);
+  if (d) d.classList.toggle('open');
+}
+
+function render() {
+  var main = document.getElementById('main');
+  var globalIdx = 0;
+
+  TIERS.forEach(function(tier) {
+    var section = el('section', {className:'tier', id:tier.id});
+
+    var header = el('div', {className:'tier-header'}, [
+      el('div', {className:'tier-number'}, tier.num),
+      el('div', {className:'tier-label'}, tier.label),
+      el('div', {className:'tier-desc'}, tier.desc)
+    ]);
+    section.appendChild(header);
+
+    var tierMovies = MOVIES.filter(function(m) { return m.tier === tier.key; });
+
+    tierMovies.forEach(function(movie) {
+      globalIdx++;
+      var idx = String(globalIdx).padStart(2, '0');
+      var barWidth = (movie.rating / 5) * 100;
+
+      var article = el('article', {className:'movie', 'data-idx':String(globalIdx)});
+
+      // Poster image with onerror fallback
+      var img = el('img', {
+        src: movie.poster,
+        alt: movie.title,
+        loading: 'lazy'
+      });
+      img.onerror = function() { this.onerror = null; this.src = movie.fallback; };
+
+      var posterDiv = el('div', {className:'movie-poster'}, [
+        el('span', {className:'idx-num'}, idx),
+        img
+      ]);
+
+      // Rating bar
+      var barFill = el('span', {className:'bar-fill'});
+      barFill.style.width = barWidth + '%';
+      var bar = el('span', {className:'bar'}, [barFill]);
+
+      var ratingDiv = el('span', {className:'movie-rating'}, [
+        el('span', {className:'score'}, movie.rating.toFixed(1)),
+        document.createTextNode('/5.0 ')
+      ]);
+      ratingDiv.appendChild(bar);
+
+      // Year/Director
+      var yearDir = el('div', {className:'movie-year-dir'}, [
+        el('span', {className:'year'}, String(movie.year)),
+        document.createTextNode(' / ' + movie.director)
+      ]);
+
+      // Tags
+      var tagsDiv = el('div', {className:'movie-tags'});
+      movie.genre_tags.forEach(function(t) {
+        tagsDiv.appendChild(el('span', {}, t));
+      });
+
+      // Streaming
+      var streamDiv = el('div', {className:'movie-streaming'});
+      streamDiv.appendChild(buildStreamingNodes(movie.streaming));
+
+      var infoDiv = el('div', {className:'movie-info'}, [
+        el('div', {}, [
+          el('div', {className:'movie-title'}, movie.title),
+          yearDir,
+          ratingDiv
+        ]),
+        tagsDiv,
+        streamDiv,
+        el('div', {className:'movie-expand-hint'}, '[TAP TO EXPAND]')
+      ]);
+
+      var movieId = movie.id;
+      var top = el('div', {className:'movie-top', onclick: function() { toggleDetails(movieId); }}, [
+        posterDiv,
+        infoDiv
+      ]);
+
+      // Details panel
+      var dnaDiv = el('div', {className:'dna'});
+      movie.dna.forEach(function(d) {
+        dnaDiv.appendChild(el('span', {}, d));
+      });
+
+      var details = el('div', {className:'movie-details', id:'details-' + movie.id}, [
+        el('div', {className:'movie-details-inner'}, [
+          el('div', {className:'label'}, 'WHY THIS FILM'),
+          el('div', {className:'desc'}, movie.why),
+          el('div', {className:'label'}, 'DNA MARKERS'),
+          dnaDiv
+        ])
+      ]);
+
+      article.appendChild(top);
+      article.appendChild(details);
+      section.appendChild(article);
+    });
+
+    main.appendChild(section);
+  });
+}
+
+function observeMovies() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.movie').forEach(function(e) { observer.observe(e); });
+}
+
+function updateScrollCounter() {
+  var count = document.querySelectorAll('.movie.visible').length;
+  document.getElementById('scroll-counter').textContent =
+    String(count).padStart(2, '0') + '/20';
+}
+
+render();
+observeMovies();
+
+var scrollTick = false;
+window.addEventListener('scroll', function() {
+  if (!scrollTick) {
+    requestAnimationFrame(function() {
+      updateScrollCounter();
+      scrollTick = false;
+    });
+    scrollTick = true;
+  }
+});
+</script>
+</body>
+</html>
